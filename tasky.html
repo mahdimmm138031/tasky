@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Responsive To Do List</title>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+	<style>
+		.material-symbols-outlined {
+			font-variation-settings:
+				'FILL' 0,
+				'wght' 400,
+				'GRAD' 0,
+				'opsz' 24;
+			cursor: pointer;
+			user-select: none;
+			transition: 0.2s;
+		}
+		.material-symbols-outlined:hover { color: #8b0000; }
+		.checkbox { font-size: clamp(1rem, 4vw, 1.6rem); }
+	</style>
+
+	<style>
+		body {
+			background-image: url('https://t4.ftcdn.net/jpg/07/17/25/91/360_F_717259139_O9Sokjftao7hBOCdazu6aq6CQ82EdHbw.jpg');
+			background-size: auto;
+			background-repeat: repeat;
+			margin: 0;
+			font-family: sans-serif;
+		}
+
+		.screen {
+			min-height: 60vh;
+			min-width: 300px;
+			width: 80vw;
+			max-width: 550px;
+			margin: 5vh auto;
+			background-color: rgba(65, 161, 173, 0.15);
+			backdrop-filter: blur(5px);
+			border-radius: 5vw;
+			color: #fff;
+			border: ridge rgba(255,255,255,0.5);
+			padding-bottom: 2vh;
+		}
+
+		.heading {
+			margin-top: 3vh;
+			font-size: clamp(2rem, 8vw, 5rem);
+			text-align: center;
+			text-shadow: 1px 1px rgba(0,0,0,0.3);
+			color: #f7f7f7;
+		}
+
+		.bar {
+			position: relative;
+			height: auto;
+			padding: clamp(0.5rem,2vw,1rem);
+			margin: 3%;
+			border-radius: 3vw;
+			background-color: #d6ebf2;
+			display: flex;
+			gap: 0.5rem;
+			z-index: 1;
+		}
+
+		.bar::after, .bar::before{
+			content: "";
+			position: absolute;
+			height: 100%;
+			width: 100%;
+			background-image: conic-gradient(from var(--angle), #c2e2f0, #a3cfe0, #c2e2f0);
+			top: 50%;
+			left: 50%;
+			translate: -50% -50%;
+			z-index: -1;
+			border-radius: 3vw;
+			padding: 0.3vw;
+			animation: 4s spin linear infinite;
+		}
+		.bar::before{
+			filter: blur(0.5vw);
+			opacity:0.5;
+		}
+		@keyframes spin{
+			from{--angle:0deg;}
+			to{--angle:360deg;}
+		}
+
+		.search-bar {
+			border-radius: 2vw;
+			height: clamp(2rem,4vw,2.4rem);
+			flex: 1;
+			padding-left: 2%;
+			background-color: #a3cfe0;
+			border: 1px solid #2a5d8f;
+			color: #333;
+			position: relative;
+			z-index: 2;
+		}
+
+		.add {
+			text-align: center;
+			border-radius: 2vw;
+			height: clamp(2rem,4vw,2.4rem);
+			width: clamp(3rem,12vw,4.5rem);
+			border: 2px solid #252714;
+			background-color: #d6ebf2;
+			color: #333;
+			position: relative;
+			z-index: 2;
+		}
+
+		.add:hover { background-color: #a3cfe0; cursor: pointer; }
+
+		.progress-container {
+			background-color: rgba(255, 255, 255, 0.2);
+			height: clamp(1rem,3vw,1.5rem);
+			margin: 0 3% 1rem 3%;
+			border-radius: 1vw;
+			overflow: hidden;
+			position: relative;
+		}
+
+		.progress-bar {
+			background: linear-gradient(90deg, #ff4d4d, #ff9999);
+			height: 100%;
+			width: 0%;
+			border-radius: 1vw;
+			text-align: center;
+			color: #333;
+			line-height: clamp(1rem,3vw,1.5rem);
+			font-weight: bold;
+		}
+
+		.list {
+			text-align: left;
+			background-color: rgba(250, 235, 215, 0.25);
+			border-radius: 2vw;
+			margin: 0 3%;
+			font-size: clamp(1rem,4vw,1.2rem);
+			padding: 1vw;
+			counter-reset: item;
+			max-height: 50vh;
+			overflow-y: auto;
+			scrollbar-gutter: stable;
+		}
+
+		.list::-webkit-scrollbar { width: 0.8rem; }
+		.list::-webkit-scrollbar-track { background: rgba(255,255,255,0.2); border-radius:2vw; }
+		.list::-webkit-scrollbar-thumb { background-color: rgba(65,161,173,0.5); border-radius:2vw; border: 0.1rem solid rgba(255,255,255,0.2); }
+		.list::-webkit-scrollbar-thumb:hover { background-color: rgba(65,161,173,0.7); }
+
+		#empty-msg { text-align: center; color: black; font-style: italic; margin:1vh 0; }
+
+		li {
+			counter-increment: item;
+			position: relative;
+			margin: 1% 3%;
+			padding: 0.5rem 0.9rem 0.5rem 2.5rem;
+			background-color: #f0f0f0;
+			border-radius: 1.5rem;
+			color: black;
+			border: 0.12rem solid #ccc;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			transform-origin: top;
+			transition: opacity 0.1s linear;
+		}
+
+		li span:nth-child(2) {
+			flex: 1;
+			word-break: break-word;
+			margin-right: 0.5rem;
+		}
+
+		li.completed span:nth-child(2) { text-decoration: line-through; color: gray; }
+
+		.counter { 
+			position:absolute; left:0.5rem; top:50%; transform:translateY(-50%); 
+			background-color:#f0f0f0; color:black; font-weight:bold; width:1.5em; height:1.5em; 
+			font-size:0.9em; display:flex; align-items:center; justify-content:center; 
+			border-radius:50%; border:0.13rem solid #ccc; 
+		}
+
+		.actions {
+			flex-shrink: 0;
+			display:flex; gap:0.6rem;
+			margin-left:auto;
+			align-items:center;
+		}
+
+		@keyframes deleteItem {
+			0% { opacity:1; transform:scaleY(1); margin:var(--li-margin);}
+			50%{ opacity:0; transform:scaleY(1); margin:var(--li-margin);}
+			100%{ opacity:0; transform:scaleY(0); margin:0;}
+		}
+	</style>
+</head>
+<body>
+	<div class="screen">
+		<form class="heading">To do List</form>
+		<div class="bar">
+			<input type="text" class="search-bar" placeholder="Add Jobs" autofocus spellcheck="false">
+			<input type="button" class="add" value="Add">
+		</div>
+		<div id="progress-wrapper" class="progress-container">
+			<div id="progress-bar" class="progress-bar">0%</div>
+		</div>
+		<ol class="list" id="todo-list">
+			<p id="empty-msg">No tasks yet</p>
+		</ol>
+	</div>
+
+	<script>
+		const list = document.getElementById('todo-list');
+		const addBtn = document.querySelector('.add');
+		const input = document.querySelector('.search-bar');
+		const emptyMsg = document.getElementById('empty-msg');
+		const progressBar = document.getElementById('progress-bar');
+
+		let tasks = [];
+		let progressAnimation = null;
+
+		function saveTasks(){ 
+			localStorage.setItem('tasks', JSON.stringify(tasks)); 
+			updateProgressSmooth(); 
+		}
+
+		function loadTasks(){ 
+			const stored = JSON.parse(localStorage.getItem('tasks') || '[]'); 
+			tasks = stored; 
+			tasks.forEach(t => createItem(t.text, t.completed, false, false)); // no save, no scroll
+			updateEmptyMsg();
+			updateProgressInstant();
+		}
+
+		function updateEmptyMsg(){ 
+			if(tasks.length === 0){
+				emptyMsg.style.display='block';
+				progressBar.style.width='0%';
+				progressBar.textContent='0%';
+			} else {
+				emptyMsg.style.display='none';
+			}
+		}
+
+		function updateProgressInstant(){
+			const completed = tasks.filter(t => t.completed).length;
+			const percent = tasks.length ? Math.round((completed/tasks.length)*100) : 0;
+			progressBar.style.width = percent + '%';
+			progressBar.textContent = percent + '%';
+		}
+
+		function updateProgressSmooth(){
+			const completed = tasks.filter(t => t.completed).length;
+			const percent = tasks.length ? Math.round((completed/tasks.length)*100) : 0;
+			let start = parseFloat(progressBar.style.width) || 0, end = percent, duration = 300;
+			let startTime = null;
+			const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+			if(progressAnimation) cancelAnimationFrame(progressAnimation);
+
+			function animate(time){
+				if(!startTime) startTime = time;
+				const elapsed = Math.min(time - startTime, duration);
+				const progress = elapsed / duration;
+				const eased = ease(progress);
+				const current = start + (end - start) * eased;
+				progressBar.style.width = current + '%';
+				progressBar.textContent = Math.round(current) + '%';
+				if(progress < 1) progressAnimation = requestAnimationFrame(animate);
+			}
+			progressAnimation = requestAnimationFrame(animate);
+		}
+
+		function scrollToBottom(element){
+			const start = element.scrollTop;
+			const end = element.scrollHeight - element.clientHeight;
+			const duration = 200;
+			const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+			let startTime = null;
+			function animate(time){
+				if(!startTime) startTime = time;
+				const elapsed = Math.min(time - startTime, duration);
+				const progress = elapsed / duration;
+				const eased = ease(progress);
+				element.scrollTop = start + (end - start) * eased;
+				if(progress < 1) requestAnimationFrame(animate);
+			}
+			requestAnimationFrame(animate);
+		}
+
+		function createItem(text, completed=false, save=true, scroll=true){
+			const li=document.createElement('li');
+			const counter=document.createElement('span'); counter.className='counter'; counter.textContent=list.querySelectorAll('li').length+1;
+			const spanText=document.createElement('span'); spanText.textContent=text;
+			const actions=document.createElement('span'); actions.className='actions';
+
+			const checkbox=document.createElement('span'); checkbox.className='material-symbols-outlined checkbox'; checkbox.textContent=completed?'check_box':'check_box_outline_blank';
+			if(completed) li.classList.add('completed');
+			checkbox.addEventListener('click',()=>{ 
+				checkbox.textContent = checkbox.textContent==='check_box_outline_blank'?'check_box':'check_box_outline_blank';
+				li.classList.toggle('completed'); 
+				const index = Array.from(list.querySelectorAll('li')).indexOf(li); 
+				tasks[index].completed = li.classList.contains('completed'); 
+				saveTasks(); 
+			});
+
+			const edit=document.createElement('span'); edit.className='material-symbols-outlined'; edit.textContent='edit';
+			edit.addEventListener('click',()=>{ 
+				const newText = prompt('Edit task:',spanText.textContent);
+				if(newText!==null && newText.trim()!==''){ 
+					spanText.textContent=newText;
+					const index=Array.from(list.querySelectorAll('li')).indexOf(li);
+					tasks[index].text=newText;
+					saveTasks();
+				}
+			});
+
+			const del=document.createElement('span'); del.className='material-symbols-outlined'; del.textContent='delete';
+			del.addEventListener('click',()=>{ 
+				const index=Array.from(list.querySelectorAll('li')).indexOf(li); 
+				const style=getComputedStyle(li); 
+				li.style.setProperty('--li-margin',style.margin); 
+				li.style.animation='deleteItem 0.3s linear forwards'; 
+				li.addEventListener('animationend',()=>{ 
+					list.removeChild(li); 
+					tasks.splice(index,1); 
+					saveTasks(); 
+					updateEmptyMsg();
+				},{once:true}); 
+			});
+
+			actions.append(checkbox,edit,del);
+			li.append(counter,spanText,actions);
+			list.appendChild(li);
+			updateEmptyMsg();
+			if(scroll) scrollToBottom(list);
+			if(save){ tasks.push({text,completed}); saveTasks(); }
+		}
+
+		addBtn.addEventListener('click',()=>{ 
+			const text=input.value.trim(); 
+			if(text!==''){ 
+				createItem(text); 
+				input.value=''; input.focus(); 
+			} 
+		});
+		input.addEventListener('keydown',(e)=>{ 
+			if(e.key==='Enter'){ 
+				e.preventDefault(); 
+				const text=input.value.trim(); 
+				if(text!==''){ 
+					createItem(text); 
+					input.value=''; 
+				} 
+			} 
+		});
+
+		loadTasks();
+	</script>
+</body>
+</html>
